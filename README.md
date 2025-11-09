@@ -12,3 +12,6 @@ Usar comando :source DesactivarEntorno.sh
 
 ## Instrucciones para modificar el entorno (en caso de haber instalado nuevas librerias):
 Tras la instalación de los nuevos paquetes, ejecutamos: conda env export > environment.yml
+
+## Instrucciones para usar jupyter en visual studio code 
+Se debe de seleccionar en el apartado de kernel el env del proyecto en específico con el que se esta trabajando, en este caso seminario_EM.
