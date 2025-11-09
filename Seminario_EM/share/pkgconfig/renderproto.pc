@@ -1,0 +1,7 @@
+prefix=/home/ismael-sallami/miniconda3/envs/Seminario_EM
+includedir=${prefix}/include
+
+Name: RenderProto
+Description: Render extension headers
+Version: 0.11.1
+Cflags: -I${includedir}

@@ -1,0 +1,7 @@
+prefix=/home/ismael-sallami/miniconda3/envs/Seminario_EM
+includedir=${prefix}/include
+ 
+Name: RandrProto
+Description: Randr extension headers
+Version: 1.6.0
+Cflags: -I${includedir}

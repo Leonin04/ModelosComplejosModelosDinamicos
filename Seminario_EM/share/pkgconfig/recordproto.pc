@@ -1,0 +1,7 @@
+prefix=/home/ismael-sallami/miniconda3/envs/Seminario_EM
+includedir=${prefix}/include
+ 
+Name: RecordProto
+Description: Record extension headers
+Version: 1.14.2
+Cflags: -I${includedir}

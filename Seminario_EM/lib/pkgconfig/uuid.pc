@@ -1,0 +1,11 @@
+prefix=/home/ismael-sallami/miniconda3/envs/Seminario_EM
+exec_prefix=/home/ismael-sallami/miniconda3/envs/Seminario_EM
+libdir=/home/ismael-sallami/miniconda3/envs/Seminario_EM/lib
+includedir=/home/ismael-sallami/miniconda3/envs/Seminario_EM/include
+
+Name: uuid
+Description: Universally unique id library
+Version: 2.32.1
+Requires:
+Cflags: -I${includedir}/uuid
+Libs: -L${libdir} -luuid
