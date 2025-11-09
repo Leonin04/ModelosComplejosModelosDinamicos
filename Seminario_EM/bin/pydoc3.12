@@ -1,5 +1,0 @@
-#!/home/ismael-sallami/miniconda3/envs/Seminario_EM/bin/python3.12
-
-import pydoc
-if __name__ == '__main__':
-    pydoc.cli()

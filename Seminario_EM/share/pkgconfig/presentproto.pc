@@ -1,7 +1,0 @@
-prefix=/home/ismael-sallami/miniconda3/envs/Seminario_EM
-includedir=${prefix}/include
- 
-Name: PresentProto
-Description: Present extension headers
-Version: 1.4
-Cflags: -I${includedir}
