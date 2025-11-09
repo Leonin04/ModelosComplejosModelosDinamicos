@@ -9,3 +9,6 @@ Usar comando: source ActivarEntorno.sh
 Usar comando :source DesactivarEntorno.sh
  
 ### Asegurate que ambos archivos tienen permiso de ejecución
+
+## Instrucciones para modificar el entorno (en caso de haber instalado nuevas librerias):
+Tras la instalación de los nuevos paquetes, ejecutamos: conda env export > environment.yml
