@@ -21,7 +21,7 @@ ARCHIVO_GREECE = "greece.xlsx"
 KEYWORD_COL_GERMANY = "Germany" 
 KEYWORD_COL_GREECE = "Grecia" 
 warnings.filterwarnings('ignore')
-OUTPUT_DIR = 'image'
+OUTPUT_DIR = 'analisis_grecia_2012'
 
 az.style.use("arviz-darkgrid")
 
@@ -59,9 +59,9 @@ def cargar_excel(archivo, keyword):
         return None
 
 # ==============================================================================
-# FASE 1: DATOS
+# FASE 1: PROCESAMIENTO (DIFERENCIAS ABSOLUTAS - OPCIÓN A)
 # ==============================================================================
-print("\n--- FASE 1: PROCESAMIENTO DE DATOS ---")
+print("\n--- FASE 1: CÁLCULO DE LA PRIMA DE RIESGO ---")
 df_ger = cargar_excel(ARCHIVO_GERMANY, KEYWORD_COL_GERMANY)
 df_gre = cargar_excel(ARCHIVO_GREECE, KEYWORD_COL_GREECE)
 
@@ -69,20 +69,24 @@ if df_ger is None or df_gre is None:
     print("Error crítico: No se pudieron cargar los archivos.")
     exit()
 
+# Unimos datos y calculamos la Prima de Riesgo (Grecia - Alemania)
 df_comb = df_gre.join(df_ger, how='inner', lsuffix='_GRE', rsuffix='_GER')
-df_comb['Spread'] = df_comb['Tasa_GER'] - df_comb['Tasa_GRE']
-retornos = df_comb['Spread'].pct_change().dropna()
+df_comb['Prima_Riesgo'] = df_comb['Tasa_GRE'] - df_comb['Tasa_GER']
 
-# Escalado x100 (Crucial para convergencia)
-y_data_garch = retornos.values * 100 
-n_samples = len(y_data_garch)
+# VARIACIÓN EN PUNTOS BÁSICOS (bps)
+# Usamos .diff() para ver el cambio absoluto y multiplicamos por 100
+variacion_bps = df_comb['Prima_Riesgo'].diff().dropna() * 100
 
-print(f"Datos listos. Muestras: {n_samples}")
+# y_volatilidad será la base para el modelo GARCH
+y_volatilidad = variacion_bps.values
+n_samples = len(y_volatilidad)
+
+print(f"Datos listos. El pico máximo detectado es de {y_volatilidad.max():.2f} bps.")
 
 # ==============================================================================
-# FASE 2: MSPD (Econofísica)
+# FASE 2: MSPD (ANÁLISIS DE DIFUSIÓN)
 # ==============================================================================
-print("\n--- FASE 2: ANÁLISIS MSPD ---")
+print("\n--- FASE 2: ANÁLISIS DE DIFUSIÓN (MSPD) ---")
 def calcular_mspd(serie, max_tau=252):
     res = {}
     vals = serie.values
@@ -93,7 +97,8 @@ def calcular_mspd(serie, max_tau=252):
 
 def power_law(t, A, alpha): return A * (t ** alpha)
 
-mspd = calcular_mspd(df_comb['Spread'], max_tau=min(250, len(df_comb)//4))
+# Calculamos MSPD sobre la Prima de Riesgo
+mspd = calcular_mspd(df_comb['Prima_Riesgo'], max_tau=min(250, len(df_comb)//4))
 x_mspd = mspd.index.values
 y_mspd = mspd.values
 
@@ -102,110 +107,82 @@ try:
     popt, _ = curve_fit(power_law, x_mspd[:limit], y_mspd[:limit], p0=[1, 0.5])
     A_fit, alpha_fit = popt
     y_fit_mspd = power_law(x_mspd, *popt)
-    print(f"Exponente Alpha: {alpha_fit:.4f}")
+    print(f"Exponente de difusión Alpha: {alpha_fit:.4f}")
 except:
     alpha_fit = np.nan
-    print("Falló el ajuste Power Law.")
+    print("Falló el ajuste del exponente Alpha.")
 
 # ==============================================================================
-# FASE 3: GARCH(1,1) BAYESIANO (CORREGIDO INITVALS)
+# FASE 3: GARCH(1,1) BAYESIANO SOBRE PUNTOS BÁSICOS
 # ==============================================================================
-print("\n--- FASE 3: GARCH(1,1) BAYESIANO ---")
-print("Iniciando muestreo MCMC...")
-
-# Preparación de datos para el scan (Desplazamiento t vs t-1)
-y_past = y_data_garch[:-1]  # Input (t-1)
-y_curr = y_data_garch[1:]   # Target (t)
-
-# Paso recursivo GARCH
-def garch_step(y_tm1, sigma2_tm1, omega, alpha, beta, mu):
-    epsilon_tm1 = y_tm1 - mu
-    return omega + alpha * (epsilon_tm1**2) + beta * sigma2_tm1
+print("\n--- FASE 3: ESTIMACIÓN DE VOLATILIDAD BAYESIANA ---")
 
 with pm.Model() as garch_model:
-    # 1. Priors con INITVALS explícitos para evitar error de -inf
-    # Esto asegura que el punto de partida cumpla alpha + beta < 1
+    # Priors adaptados a la escala de puntos básicos
     mu = pm.Normal("mu", mu=0, sigma=10, initval=0.0)
-    omega = pm.InverseGamma("omega", alpha=2.5, beta=0.25, initval=0.5)
+    omega = pm.InverseGamma("omega", alpha=2.5, beta=1.0, initval=0.5)
     
-    # Initval clave: 0.1 + 0.8 = 0.9 ( < 1, es seguro)
-    alpha = pm.Beta("alpha", alpha=2, beta=2, initval=0.1)
-    beta = pm.Beta("beta", alpha=5, beta=1, initval=0.8)
+    # Initvals para cumplir la condición de estabilidad alpha + beta < 1
+    alpha = pm.Beta("alpha", alpha=2, beta=5, initval=0.1)
+    beta = pm.Beta("beta", alpha=5, beta=2, initval=0.8)
     
-    # Restricción de Estacionariedad
-    pm.Potential("stationarity", pm.math.switch(alpha + beta < 1.0, 0, -np.inf))
+    pm.Potential("estacionariedad", pm.math.switch(alpha + beta < 1.0, 0, -np.inf))
 
-    # 2. Bucle de Volatilidad (Scan)
-    sigma2_0 = pt.as_tensor_variable(np.var(y_data_garch))
+    sigma2_0 = pt.as_tensor_variable(np.var(y_volatilidad))
     
+    def garch_step(y_tm1, sigma2_tm1, omega, alpha, beta, mu):
+        return omega + alpha * ((y_tm1 - mu)**2) + beta * sigma2_tm1
+
     sigma2_cycle, _ = pytensor.scan(
         fn=garch_step,
-        sequences=[y_past],
+        sequences=[y_volatilidad[:-1]],
         outputs_info=[sigma2_0],
         non_sequences=[omega, alpha, beta, mu]
     )
     
-    # 3. Reconstrucción
     sigma2 = pm.Deterministic("sigma2", pt.concatenate([[sigma2_0], sigma2_cycle]))
     sigma = pm.Deterministic("sigma", pt.sqrt(sigma2))
     
-    # 4. Likelihood
-    # Importante: sigma tiene la misma longitud que y_data_garch
-    likelihood = pm.Normal("obs", mu=mu, sigma=sigma, observed=y_data_garch)
+    # Verosimilitud
+    pm.Normal("obs", mu=mu, sigma=sigma, observed=y_volatilidad)
 
-    # 5. Inferencia
-    # Usamos init='adapt_diag' en lugar de 'jitter+adapt_diag' para evitar saltos locos al inicio
-    trace = pm.sample(
-        draws=1000, 
-        tune=1000, 
-        chains=2, 
-        target_accept=0.9, 
-        init="adapt_diag", 
-        return_inferencedata=True
-    )
-
-# Resumen
-print("\n--> Resumen de Parámetros Posteriores:")
-summary = az.summary(trace, var_names=["mu", "omega", "alpha", "beta"])
-print(summary)
+    # Muestreo Bayesiano
+    trace = pm.sample(draws=100, tune=100, chains=2, target_accept=0.9, init="adapt_diag")
 
 # ==============================================================================
-# FASE 4: GRÁFICOS
+# FASE 4: VISUALIZACIÓN DE RESULTADOS (ENFOCADA EN 2012)
 # ==============================================================================
-print("\n--- FASE 4: GUARDANDO GRÁFICOS ---")
+print("\n--- FASE 4: GENERANDO REPORTES GRÁFICOS ---")
 if not os.path.exists(OUTPUT_DIR): os.makedirs(OUTPUT_DIR)
 
-# 1. Datos
-plt.figure(figsize=(10, 6))
-plt.plot(retornos.index, retornos * 100, 'k', alpha=0.5)
-plt.title('Retornos (x100)')
-plt.savefig(f"{OUTPUT_DIR}/1_Datos.png")
+# 1. Variación Diaria (Puntos Básicos) - Aquí verás el pico real de la crisis
+plt.figure(figsize=(12, 6))
+plt.plot(variacion_bps.index, variacion_bps, color='teal', lw=0.7, alpha=0.8)
+plt.title('Variación Diaria de la Prima de Riesgo (Puntos Básicos - bps)')
+plt.ylabel('bps')
+plt.savefig(f"{OUTPUT_DIR}/1_Variacion_Absoluta_bps.png")
 plt.close()
 
 # 2. MSPD
 plt.figure(figsize=(6, 5))
-plt.loglog(x_mspd, y_mspd, 'bo')
+plt.loglog(x_mspd, y_mspd, 'bo', label='Datos')
 if not np.isnan(alpha_fit):
-    plt.loglog(x_mspd, y_fit_mspd, 'r-')
-plt.title(f'MSPD (Alpha={alpha_fit:.2f})')
-plt.savefig(f"{OUTPUT_DIR}/2_MSPD.png")
-plt.close()
-
-# 3. Trace Bayesiano
-az.plot_trace(trace, var_names=["mu", "omega", "alpha", "beta"])
-plt.savefig(f"{OUTPUT_DIR}/3_Bayes_Trace.png")
-plt.close()
-
-# 4. Volatilidad
-vol_posterior = trace.posterior["sigma"].mean(dim=["chain", "draw"]).values
-vol_real = vol_posterior / 100 # Des-escalar
-
-plt.figure(figsize=(12, 5))
-plt.plot(retornos.index, np.abs(retornos), color='silver', label='|Retornos|')
-plt.plot(retornos.index, vol_real, color='darkred', label='Volatilidad Bayesiana', linewidth=1.5)
-plt.title('Volatilidad Estocástica Estimada')
+    plt.loglog(x_mspd, y_fit_mspd, 'r-', label=f'Alpha={alpha_fit:.2f}')
+plt.title('Análisis de Difusión (MSPD)')
 plt.legend()
-plt.savefig(f"{OUTPUT_DIR}/4_Volatilidad_GARCH.png")
+plt.savefig(f"{OUTPUT_DIR}/2_Analisis_Difusion.png")
 plt.close()
 
-print(f"¡Listo! Revisa la carpeta '{OUTPUT_DIR}'")
+# 3. Volatilidad Estimada (Crisis 2012)
+vol_posterior = trace.posterior["sigma"].mean(dim=["chain", "draw"]).values
+
+plt.figure(figsize=(12, 6))
+plt.plot(variacion_bps.index, np.abs(variacion_bps), color='lightgray', label='Variación Realizada (|bps|)')
+plt.plot(variacion_bps.index, vol_posterior, color='darkred', label='Volatilidad Bayesiana GARCH', linewidth=1.5)
+plt.title('Estimación de Volatilidad (Crisis de Deuda 2012)')
+plt.ylabel('Desviación Estándar (bps)')
+plt.legend()
+plt.savefig(f"{OUTPUT_DIR}/3_Volatilidad_Estimada.png")
+plt.close()
+
+print(f"¡Hecho! Los archivos están en '{OUTPUT_DIR}'.")
