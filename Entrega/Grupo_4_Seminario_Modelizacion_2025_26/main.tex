@@ -1,0 +1,140 @@
+\documentclass[11pt,twoside]{article}
+
+\usepackage{paperlighter}
+
+% Recommended, but optional, packages for figures and better typesetting:
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{booktabs} % for professional tables
+
+% Attempt to make hyperref and algorithmic work together better:
+%\newcommand{\theHalgorithm}{\arabic{algorithm}}
+
+
+% For theorems and such
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage{amsthm}
+
+% if you use cleveref..
+\usepackage[capitalize,noabbrev]{cleveref}
+
+% Paquetes extra
+\usepackage{comment}
+
+% ==========================================
+% CONFIGURACIÓN DE CÓDIGO (LISTINGS) - SOPORTE TOTAL
+% ==========================================
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{textcomp} % <--- Necesario para comillas rectas
+
+% Colores
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.96,0.96,0.96}
+
+% Estilo
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    frame=single,
+    rulecolor=\color{gray!20},
+    inputencoding=utf8,
+    extendedchars=true,
+    upquote=true, % <--- IMPORTANTE: Hace que ' sea recto, no rizado
+    % --- SECCIÓN LITERATE: TODOS LOS SÍMBOLOS ---
+    literate=
+        {á}{{\'a}}1
+        {é}{{\'e}}1
+        {í}{{\'i}}1
+        {ó}{{\'o}}1
+        {ú}{{\'u}}1
+        {Á}{{\'A}}1
+        {É}{{\'E}}1
+        {Í}{{\'I}}1
+        {Ó}{{\'O}}1
+        {Ú}{{\'U}}1
+        {ñ}{{\~n}}1
+        {Ñ}{{\~N}}1
+        {¿}{{?`}}1
+        {¡}{{!`}}1
+        {°}{{\textdegree}}1
+        {#}{{\#}}1            % <--- Soporte para #
+        {_}{{\_}}1            % <--- Soporte para guion bajo
+        {'}{{\textquotesingle}}1 % <--- Soporte explícito para comilla simple
+}
+
+\lstset{style=mystyle}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% THEOREMS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{assumption}[theorem]{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+% Todonotes is useful during development; simply uncomment the next line
+%    and comment out the line below the next line to turn off comments
+%\usepackage[disable,textsize=tiny]{todonotes}
+\usepackage[textsize=tiny]{todonotes}
+
+% --- ENCABEZADOS DE PÁGINA (TÍTULO CORTO) ---
+\slimtitle{Dinámica Estocástica de la Prima de Riesgo: Difusión vs GARCH}
+\slimauthor{Sallami Moreno \& Bacas Posadas}
+
+\begin{document}
+
+% --- TÍTULO PRINCIPAL (GRANDE) ---
+\lightertitle{Análisis de la Prima de Riesgo Griega: Un Enfoque Comparativo entre Econofísica y GARCH Bayesiano}
+
+% --- AUTORES ---
+\lighterauthor{Ismael Sallami Moreno$^{\dagger}$, David Bacas Posadas$^{\ddagger}$}
+\vspace{1cm} % El espacio que arreglamos antes
+
+% --- CORREOS ---
+\lighteraddress{$^\dagger$}{ismaelsallami12@gmail.com}
+\lighteraddress{$^\ddagger$}{davidbacasposadas@gmail.com}
+
+% \lighteremail{xxx@xxx.com}
+
+
+\input{content/abstract}
+%\input{content/format}
+%\input{content/others}
+\input{content/results}
+\input{content/conclusion}
+
+\bibliographystyle{plainnat}
+\bibliography{ref}
+
+\newpage
+\appendix
+\input{content/appendix}
+
+\end{document}
