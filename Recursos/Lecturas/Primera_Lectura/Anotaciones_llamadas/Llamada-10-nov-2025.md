@@ -1,0 +1,2 @@
+- No debemos de usar la manual `mesa`
+- No hay código programado por otros alumnos, por ende, debemos de programarlo nosotros.
