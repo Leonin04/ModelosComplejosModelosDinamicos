@@ -211,11 +211,11 @@ with tab3:
     """)
     
     # 1. Intentar cargar imagen estática (Modelo Bayesiano Completo)
-    image_path = "analisis_grecia_calibracion_mse/3_Volatilidad_Estimada.png"
+    image_path = "analisis_grecia_calibracion_mse/Modelo_GARCH_Fit.png"
     
     if os.path.exists(image_path):
         st.success("✅ Resultados del Modelo Bayesiano (MCMC) encontrados.")
-        st.image(image_path, caption="Volatilidad Posterior (Sigma) estimada por MCMC", use_column_width=True)
+        st.image(image_path, caption="Volatilidad Posterior (Sigma) estimada por MCMC", use_container_width=True)
         st.caption("Nota: Esta gráfica es estática y proviene de la ejecución previa del modelo completo.")
         
     else:
