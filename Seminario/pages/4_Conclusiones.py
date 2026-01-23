@@ -45,7 +45,7 @@ with col_text:
     st.markdown("""
     **Interpretación Final:**
     
-    1.  **Memoria del Mercado:** La serie temporal de la deuda griega no sigue un paseo aleatorio ($\alpha \\neq 0.5$). El valor $\\alpha \\approx 0.94$ confirma una estructura de **memoria de largo alcance** persistente durante la crisis.
+    1.  **Memoria del Mercado:** La serie temporal de la deuda griega no sigue un paseo aleatorio ($\\alpha \\neq 0.5$). El valor $\\alpha \\approx 0.94$ confirma una estructura de **memoria de largo alcance** persistente durante la crisis.
     
     2.  **Dualidad Metodológica:**
         * El enfoque de **Econofísica** (Difusión) resultó superior para describir la tendencia estructural y la naturaleza del fenómeno.

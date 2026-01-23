@@ -34,7 +34,7 @@ La lógica de visualización se divide en módulos independientes (nombres técn
 
 ---
 
-## 💻 Guía de Instalación y Ejecución
+## 💻 Guía de Instalación y Ejecución NO AUTOMÁTICA
 
 El proyecto requiere un entorno aislado de Python (3.10+) para gestionar las librerías de cálculo numérico como `PyMC`, `ArviZ` y `Streamlit`.
 
@@ -56,6 +56,29 @@ streamlit run Home.py
 La aplicación se abrirá automáticamente en [http://localhost:8501](http://localhost:8501).
 
 > **Nota:** Si necesita recalibrar el modelo GARCH y regenerar las gráficas estáticas, ejecute `python script.py` antes de iniciar la web.
+
+
+## 🖱️ Instalación y Ejecución Automática
+
+Este proyecto incluye scripts de automatización para simplificar el despliegue en cualquier sistema operativo.
+
+### Requisitos Previos
+* Tener instalado **Anaconda** o **Miniconda**.
+
+### Instrucciones
+
+**Para Usuarios de Windows:**
+1. Busque el archivo `setup_windows.bat` en la carpeta raíz.
+2. Haga doble clic sobre él.
+3. El script creará el entorno y abrirá la aplicación automáticamente.
+
+**Para Usuarios de Linux / macOS:**
+1. Abra una terminal en la carpeta del proyecto.
+2. Ejecute el siguiente comando:
+   ```bash
+   bash setup_unix.sh
+Nota: La primera ejecución puede demorarse unos minutos mientras se descargan las librerías necesarias.
+
 
 ---
 

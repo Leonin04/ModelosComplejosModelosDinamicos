@@ -1,0 +1,97 @@
+
+
+\section{Diagnósticos del Modelo Bayesiano}
+\label{app:diagnosticos}
+
+\subsection{Especificación de Priors}
+
+Para el modelo GARCH(1,1), se seleccionaron las siguientes distribuciones a priori (Priors) basándose en la literatura estándar de econometría financiera, buscando distribuciones poco informativas para permitir que los datos dominen la inferencia:
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{llp{6cm}}
+        \toprule
+        \textbf{Parámetro} & \textbf{Distribución A Priori} & \textbf{Justificación} \\
+        \midrule
+        $\mu$ (Media) & $\mathcal{N}(0, 1)$ & Se asume retorno medio cercano a cero. \\
+        $\omega$ (Intercepto) & $\text{InverseGamma}(2.5, 1.0)$ & Positividad estricta requerida. \\
+        $\alpha, \beta$ (GARCH) & $\text{Beta}(\dots)$ & Restricción de estacionariedad ($\alpha + \beta < 1$). \\
+        $\nu$ (Grados Libertad) & $\text{Gamma}(2, 0.1)$ & Permite colas pesadas (t-Student). \\
+        \bottomrule
+    \end{tabular}
+    \caption{Resumen de la estructura Bayesiana del modelo.}
+    \label{tab:priors}
+\end{table}
+
+\noindent La elección de estas distribuciones a priori sigue un enfoque \textit{débilmente informativo}, diseñado para imponer restricciones teóricas necesarias sin sesgar excesivamente la inferencia final. A continuación se detalla la lógica detrás de cada selección:
+
+\begin{enumerate}
+    \item \textbf{Parámetro de Localización ($\mu$):} Se utiliza una distribución Normal centrada en cero. Dado que estamos modelando variaciones diarias de la prima de riesgo (diferencias), es razonable asumir que el valor esperado a largo plazo tiende a la neutralidad, permitiendo desviaciones simétricas positivas o negativas.
+    
+    \item \textbf{Restricción de Positividad ($\omega$):} El término de intercepto de la varianza no puede ser negativo. La distribución \textit{InverseGamma} es estándar en la literatura de volatilidad estocástica porque su soporte es estrictamente positivo $(0, \infty)$, evitando así varianzas negativas imposibles físicamente.
+    
+    \item \textbf{Estacionariedad y Persistencia ($\alpha, \beta$):} Los coeficientes del proceso GARCH representan el peso de las noticias recientes ($\alpha$) y la persistencia de la volatilidad pasada ($\beta$). Ambos deben estar acotados en el intervalo $[0, 1]$. La distribución Beta es la elección natural para variables acotadas en este rango. Además, mediante el uso de \texttt{pm.Potential}, se impuso la restricción dura de estacionariedad $\alpha + \beta < 1$, necesaria para que la varianza no explote al infinito a largo plazo.
+    
+    \item \textbf{Colas Pesadas ($\nu$):} Los retornos financieros raramente siguen una distribución Normal perfecta (exceso de curtosis). El parámetro de grados de libertad de la t-Student controla el grosor de las colas. Una distribución Gamma para $\nu$ asigna baja probabilidad a valores muy pequeños (varianza infinita) y a valores muy grandes (convergencia a Normal), favoreciendo valores intermedios (típicamente entre 3 y 30) que son característicos de los mercados en crisis.
+\end{enumerate}
+
+\section{Registro de Ejecución y Validación Numérica}
+\label{app:log_terminal}
+
+Para garantizar la reproducibilidad de los resultados expuestos en la Sección \ref{sec:analisis_empirico}, se adjunta a continuación la salida directa generada por el script de calibración. 
+
+Este registro confirma los tiempos de cómputo (797 segundos), los parámetros exactos calibrados ($\alpha=0.9360$) y detalla las advertencias del muestreador NUTS respecto a la convergencia (R-hat y ESS), justificando la necesidad de mayor potencia computacional discutida en el cuerpo del trabajo.
+
+\begin{lstlisting}[
+    basicstyle=\ttfamily\scriptsize, 
+    frame=single, 
+    backgroundcolor=\color{backcolour}, 
+    caption={Salida por terminal del proceso de calibración},
+    label={lst:terminal_output}
+]
+python3 vBayes-student-mejorado.py
+-----------------------------------------------------------
+--- FASE 1: PREPARACIÓN DE DATOS ---
+--> Leyendo germany.xlsx...
+    Columna detectada: Bid Yield: Rendimiento bono (oferta) 10 años Germany (%)
+--> Leyendo greece.xlsx...
+    Columna detectada: Bid Yield: Rendimiento bono (oferta) 10 años Grecia (%)
+Datos originales Max: 1987.40 bps
+Datos escalados: Max=51.32 | Tipo=float64
+
+--- FASE 2: CALIBRANDO MODELO DE DIFUSIÓN ---
+Exponente de difusión Alpha calibrado: 0.9360
+
+--- FASE 3: CALIBRANDO MODELO GARCH (MCMC) ---
+Ejecutando calibración Monte Carlo...
+Initializing NUTS using adapt_diag...
+Multiprocess sampling (2 chains in 2 jobs)
+NUTS: [mu, omega, alpha, beta, nu]
+
+Progress: 200 Draws, 0 Divergences, Step size 0.001, Grad evals 167
+Sampling Speed: 4.00 s/draws, Elapsed: 0:13:16
+Progress: 200 Draws, 0 Divergences, Step size 0.001, Grad evals 191
+Sampling Speed: 3.49 s/draws, Elapsed: 0:11:33
+
+Sampling 2 chains for 100 tune and 100 draw iterations (200 + 200 draws total) took 797 seconds.
+We recommend running at least 4 chains for robust computation of convergence diagnostics
+The rhat statistic is larger than 1.01 for some parameters. This indicates problems during sampling.
+The effective sample size per chain is smaller than 100 for some parameters.
+
+Generando simulaciones predictivas (Validación Monte Carlo)...
+Sampling: [obs]
+Sampling ... 100% 0:00:00 / 0:00:00
+
+===========================================================
+      COMPARACIÓN DE MODELOS (MSE AUTOMÁTICO)
+===========================================================
+MODELO 1: DIFUSIÓN (ECONOPHYSICS)
+-> MSE: 8.3865
+
+MODELO 2: GARCH BAYESIANO (MONTE CARLO)
+-> MSE: 1692.0925
+------------------------------------------------------------
+Resultados guardados en analisis_grecia_calibracion_mse
+\end{lstlisting}
+
+Enlace al repositorio con el código fuente, datos y más: \url{https://github.com/Leonin04/ModelosComplejosModelosDinamicos}

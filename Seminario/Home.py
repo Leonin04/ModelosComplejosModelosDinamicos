@@ -61,12 +61,10 @@ def create_zip_of_project():
 # CONTENIDO PRINCIPAL
 # ==========================================
 
-# 1. Cabecera Institucional
-col_logo, col_title = st.columns([1, 5])
-with col_title:
-    st.title("Análisis de la Prima de Riesgo Griega")
-    st.markdown("### *Un Enfoque Comparativo entre Econofísica y Econometría Bayesiana*")
-    st.markdown("**Seminario de Modelización 2025/26 - Grupo 4**")
+# 1. Cabecera Institucional (Sin columnas, todo a la izquierda)
+st.title("Análisis de la Prima de Riesgo Griega")
+st.markdown("### *Un Enfoque Comparativo entre Econofísica y Econometría Bayesiana*")
+st.markdown("**Seminario de Modelización 2025/26 - Grupo 4**")
 
 st.divider()
 
@@ -88,6 +86,7 @@ with col_left:
     
     * **Econofísica (Difusión Anómala):** Evalúa la memoria del mercado a largo plazo mediante leyes de potencia.
     * **Econometría (GARCH Bayesiano):** Modela la volatilidad condicional y el agrupamiento de volatilidad a corto plazo.
+    * Se incluye un **video introductorio** que contextualiza la crisis y los objetivos del estudio, para aquellos que no sepan del tema.
     """)
 
 with col_right:
@@ -115,7 +114,7 @@ with col_right:
     
     # === EL ENLACE AL DASHBOARD ===
     # Esto busca el archivo en la carpeta 'pages' automáticamente
-    st.page_link("pages/1_Dashboard.py", label="ACCEDER AL DASHBOARD INTERACTIVO", icon="📈", use_container_width=True)
+    st.page_link("pages/2_Dashboard.py", label="ACCEDER AL DASHBOARD INTERACTIVO", icon="📈", use_container_width=True)
 
 st.divider()
 

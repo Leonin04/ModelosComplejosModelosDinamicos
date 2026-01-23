@@ -1,6 +1,8 @@
 \section{Análisis Empírico y Calibración de Modelos}
 \label{sec:analisis_empirico}
 
+\subsection{Enfoques planteados en la literatura}
+
 En esta sección se presenta la calibración y validación comparativa de los dos enfoques propuestos: el modelo de Difusión Anómala, fundamentado en la Econofísica siguiendo a Alvarez-Ramirez et al. \cite{Alvarez2002}, y el modelo GARCH Bayesiano, estándar en la econometría financiera moderna \cite{Bollerslev1986}. 
 
 El conjunto de datos utilizado corresponde al diferencial de la prima de riesgo (spread) entre los bonos de Grecia y Alemania a 10 años. Tras el preprocesamiento, se identificó un máximo en la serie original de $1987.40$ puntos básicos (bps), evidenciando la magnitud extrema de la crisis de deuda soberana griega \cite{Arghyrou2011}.
@@ -15,9 +17,9 @@ El modelo ajustado responde a la ley de potencia característica de los sistemas
 \end{equation}
 Donde el exponente $\alpha$ determina la naturaleza de la difusión.
 
-\begin{figure}[h!]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\linewidth]{figure/Modelo_Difusion_Fit.png} 
+    \includegraphics[width=0.7\linewidth]{figure/Modelo_Difusion_Fit.png} 
     \caption{Calibración del Modelo de Difusión en escala Log-Log. El ajuste lineal indica una adherencia robusta a la ley de potencia con $\alpha \approx 0.94$.}
     \label{fig:diffusion_fit}
 \end{figure}
@@ -27,6 +29,11 @@ Como se observa en la Figura \ref{fig:diffusion_fit}, el ajuste mediante Mínimo
 \alpha = 0.9360
 \]
 Este valor sugiere un comportamiento \textit{super-difusivo} cercano al movimiento balístico ($\alpha=1$). Esto implica que los shocks en la prima de riesgo griega no se disipan aleatoriamente, sino que exhiben una fuerte persistencia (efecto memoria), validando la hipótesis de dinámicas tipo ''arrested'' propuestas en la literatura de econofísica \cite{Alvarez2002}. El Error Cuadrático Medio (MSE) obtenido para este ajuste estructural fue de $\mathbf{8.3865}$, confirmando la alta calidad del modelo para describir la escala temporal del fenómeno.
+
+\subsection{Datos y variables}
+La muestra incluye observaciones diarias del rendimiento del bono a 10 años de Grecia y Alemania, cubriendo el ciclo completo de la crisis de deuda soberana. La variable endógena es el spread o prima de riesgo (diferencia en puntos básicos entre el bono griego y el alemán), una medida directa de la percepción de impago por parte del mercado.
+
+El análisis descriptivo de la variable endógena revela la magnitud extrema del fenómeno estudiado. Durante el periodo de análisis, la prima de riesgo alcanzó un valor máximo de 1987.40 puntos básicos, un nivel insostenible que refleja la ruptura del mercado de bonos. La serie presenta una media elevada y una desviación estándar significativa, con una distribución caracterizada por un exceso de curtosis (colas pesadas), lo que justifica estadísticamente el rechazo de la hipótesis de normalidad y la elección de distribuciones robustas como la t-Student para el modelado econométrico.
 
 \subsection{Modelo GARCH(1,1) Bayesiano}
 
@@ -45,7 +52,7 @@ Se empleó una verosimilitud t-Student para capturar las colas pesadas observada
     \label{fig:garch_fit}
 \end{figure}
 
-\subsubsection{Diagnóstico de Convergencia Computacional}
+\subsubsection{\textbf{Diagnóstico de Convergencia Computacional}}
 
 La calibración se ejecutó utilizando el algoritmo NUTS (No-U-Turn Sampler). El proceso computacional tuvo una duración de 797 segundos para generar un total de 400 muestras (2 cadenas, 100 de tune y 100 de draws cada una).
 

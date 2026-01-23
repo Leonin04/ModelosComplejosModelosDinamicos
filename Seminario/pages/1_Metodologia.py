@@ -145,7 +145,7 @@ st.markdown("Puedes descargar el archivo `.ipynb` completo y los datos desde la 
 st.info("Ahora que conoces la teoría, experimenta con los parámetros en el Dashboard.")
 with st.container():
     st.page_link(
-        "pages/1_Dashboard.py", 
+        "pages/2_Dashboard.py", 
         label="Ir al Laboratorio Interactivo", 
         icon=":material/ads_click:",  
         use_container_width=True

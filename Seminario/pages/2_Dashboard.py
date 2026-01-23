@@ -91,23 +91,47 @@ def load_data_robusto():
     
     return df_comb
 
-@st.cache_data
+# @st.cache_data
+# def calculate_ewma_volatility(series, lambda_=0.94):
+#     """
+#     Calcula la volatilidad EWMA (RiskMetrics), un proxy muy bueno del GARCH
+#     que se puede calcular en tiempo real.
+#     """
+#     returns = series.diff().dropna()
+#     n = len(returns)
+#     variance = np.zeros(n)
+#     variance[0] = returns.var()
+    
+#     # Bucle optimizado con numba sería mejor, pero esto es suficientemente rápido para n<5000
+#     for t in range(1, n):
+#         variance[t] = lambda_ * variance[t-1] + (1 - lambda_) * returns[t]**2
+        
+#     volatility = np.sqrt(variance)
+#     return pd.Series(volatility, index=returns.index)
+
 def calculate_ewma_volatility(series, lambda_=0.94):
     """
-    Calcula la volatilidad EWMA (RiskMetrics), un proxy muy bueno del GARCH
-    que se puede calcular en tiempo real.
+    Calcula la volatilidad EWMA.
+    Usa .values para ignorar el índice de fechas y evitar KeyError.
     """
+    # 1. Obtenemos la serie de diferencias
     returns = series.diff().dropna()
+    
+    # 2. ¡IMPORTANTE! Extraemos solo los números (array numpy)
+    # Así podemos usar [t] como posición 0, 1, 2... sin importar si el índice es fecha.
+    returns_arr = returns.values 
+    
     n = len(returns)
     variance = np.zeros(n)
     variance[0] = returns.var()
     
-    # Bucle optimizado con numba sería mejor, pero esto es suficientemente rápido para n<5000
+    # 3. Iteramos sobre el array de números, no sobre la serie de pandas
     for t in range(1, n):
-        variance[t] = lambda_ * variance[t-1] + (1 - lambda_) * returns[t]**2
+        # Usamos returns_arr[t] en vez de returns[t]
+        variance[t] = lambda_ * variance[t-1] + (1 - lambda_) * returns_arr[t]**2
         
-    volatility = np.sqrt(variance)
-    return pd.Series(volatility, index=returns.index)
+    # 4. Volvemos a ponerle las fechas al resultado final
+    return pd.Series(np.sqrt(variance), index=returns.index)
 
 # Carga inicial
 df_total = load_data_robusto()

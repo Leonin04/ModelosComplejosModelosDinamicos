@@ -11,14 +11,14 @@ st.set_page_config(
 )
 
 # Botón de volver a la portada
-st.page_link("Home.py", label="⬅️ Volver a la Portada", use_container_width=True)
+# st.page_link("Home.py", label="⬅️ Volver a la Portada", use_container_width=True)
 
 st.title("📂 Documentación del Proyecto")
 st.markdown("Especificaciones técnicas, arquitectura de despliegue y manual de uso.")
 
 # --- ENLACE A GITHUB ---
 # Recuerda poner tu enlace real aquí
-GITHUB_LINK = "https://github.com/TU_USUARIO/TU_REPO"
+GITHUB_LINK = "https://github.com/Leonin04/ModelosComplejosModelosDinamicos"
 
 col_repo, col_req = st.columns([1, 2])
 with col_repo:
@@ -70,18 +70,42 @@ with tab_struct:
 
 # --- PESTAÑA 2: INSTALACIÓN (COMANDOS) ---
 with tab_install:
-    st.subheader("Guía de Despliegue Rápido")
+    st.subheader("🚀 Guía de Ejecución Automática")
+    st.markdown("Este proyecto incluye scripts de autoinstalación que configuran el entorno y lanzan la aplicación en un solo paso.")
+
+    col_win, col_unix = st.columns(2, gap="medium")
+
+    # Columna Windows
+    with col_win:
+        st.info("🪟 **Para Windows**")
+        st.markdown("""
+        1. Localice el archivo `setup_windows.bat` en la raíz.
+        2. Haga **doble clic** sobre él.
+        3. Espere a que se configure el entorno y se abra el navegador.
+        """)
+        st.caption("Requisito: Tener Anaconda/Miniconda instalado.")
+
+    # Columna Linux/Mac
+    with col_unix:
+        st.info("🐧 **Para Linux / macOS**")
+        st.markdown("Abra una terminal en la carpeta del proyecto y ejecute:")
+        st.code("bash setup_unix.sh", language="bash")
+        st.markdown("El script verificará Conda, instalará dependencias y lanzará la web.")
+
+    st.divider()
     
-    st.markdown("#### 1. Preparación del Entorno")
-    st.markdown("Ejecute el script de bash para instalar dependencias:")
-    st.code("source ActivarEntorno.sh", language="bash")
-    
-    st.markdown("#### 2. Ejecución del Dashboard")
-    col_run, col_desc = st.columns([2, 1])
-    with col_run:
-        st.code("streamlit run Home.py", language="bash")
-    with col_desc:
-        st.caption("⚠️ Importante: Ejecutar siempre `Home.py` para cargar correctamente la navegación lateral.")
+    st.markdown("#### 🛠️ Ejecución Manual (Alternativa)")
+    st.markdown("Si prefiere tener control total sobre el proceso, use los comandos estándar:")
+    st.code("""
+# 1. Crear entorno
+conda env create -f environment.yml
+
+# 2. Activar
+conda activate Seminario_EM
+
+# 3. Lanzar
+streamlit run Home.py
+    """, language="bash")
 
 # --- PESTAÑA 3: README RAW (Lectura dinámica) ---
 with tab_readme:
