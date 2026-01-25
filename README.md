@@ -10,7 +10,7 @@
 ## 🚀 Acceso Inmediato (Cloud)
 Este proyecto ha sido desplegado en la nube. Puedes interactuar con la aplicación y visualizar los resultados sin necesidad de instalación local:
 
-👉 **[VER APLICACIÓN WEB DEPLEGADA](AQUÍ_PEGA_TU_ENLACE_DE_STREAMLIT_CLOUD)** 👈
+👉 **[VER APLICACIÓN WEB DEPLEGADA](https://emsemgrupo4.streamlit.app/)** 👈
 
 
 > ⚠️ **Advertencia:** Si se opta por realizar pruebas siguiendo las siguientes guías se debe de tener un conocimiento básico sobre como gestionar entornos y demás.
