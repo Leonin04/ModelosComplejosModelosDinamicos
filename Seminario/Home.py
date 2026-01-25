@@ -73,7 +73,7 @@ col_left, col_right = st.columns([1, 1], gap="large")
 
 with col_left:
     st.markdown("## Presentación del Proyecto")
-    video_path = "Crisis_de_la_Deuda_Griega.mp4"
+    video_path = "web_files/Crisis_de_la_Deuda_Griega.mp4"
     if os.path.exists(video_path):
         st.video(video_path)
     else:

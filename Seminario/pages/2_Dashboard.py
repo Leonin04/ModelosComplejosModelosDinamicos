@@ -79,8 +79,8 @@ def load_data_robusto():
             st.error(f"Error cargando {archivo}: {e}")
             return None
 
-    df_ger = leer_y_procesar("germany.xlsx", "Germany")
-    df_gre = leer_y_procesar("greece.xlsx", "Grecia")
+    df_ger = leer_y_procesar("data/germany.xlsx", "Germany")
+    df_gre = leer_y_procesar("data/greece.xlsx", "Grecia")
     
     if df_ger is None or df_gre is None or df_ger.empty or df_gre.empty:
         return None

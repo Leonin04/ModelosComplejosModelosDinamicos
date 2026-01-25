@@ -16,8 +16,8 @@ import pytensor
 # ==============================================================================
 # CONFIGURACIÓN
 # ==============================================================================
-ARCHIVO_GERMANY = "germany.xlsx"  
-ARCHIVO_GREECE = "greece.xlsx"    
+ARCHIVO_GERMANY = "data/germany.xlsx"  
+ARCHIVO_GREECE = "data/greece.xlsx"    
 KEYWORD_COL_GERMANY = "Germany" 
 KEYWORD_COL_GREECE = "Grecia" 
 warnings.filterwarnings('ignore')

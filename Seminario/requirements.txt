@@ -1,0 +1,9 @@
+streamlit
+pandas
+numpy
+scipy
+plotly
+matplotlib
+openpyxl
+# pymc  <--  si da error de memoria, comentamos esta línea. 
+# Como ya tenemos las imágenes generadas en 'results', quizás no necesites recalcular el modelo en vivo.
