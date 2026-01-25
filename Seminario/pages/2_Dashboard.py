@@ -38,21 +38,41 @@ perspectivas de la **Econofísica (Difusión)** y la **Econometría (GARCH)**.
 # ==========================================
 
 @st.cache_data
+@st.cache_data
 def load_data_robusto():
     """
-    Carga datos usando rutas absolutas para que funcione en la Nube y en Local.
+    Carga datos con depuración visual para detectar errores en la Nube.
     """
-    # 1. Averiguar dónde está este script (Dashboard.py)
-    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    # ---------------------------------------------------------
+    # 1. CONFIGURACIÓN DE RUTAS (Igual que el video)
+    # ---------------------------------------------------------
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__)) # Estamos en /Seminario/pages
+    PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)              # Subimos a /Seminario
     
-    # 2. Subir un nivel para llegar a la carpeta 'Seminario' (padre de 'pages')
-    PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
-    
-    # 3. Construir las rutas completas a los Excel
     ruta_germany = os.path.join(PROJECT_ROOT, "data", "germany.xlsx")
     ruta_greece = os.path.join(PROJECT_ROOT, "data", "greece.xlsx")
 
-    # --- Función interna de limpieza (se mantiene igual) ---
+    # ---------------------------------------------------------
+    # 2. VERIFICACIÓN DE EXISTENCIA (El paso crítico)
+    # ---------------------------------------------------------
+    if not os.path.exists(ruta_germany):
+        st.error(f"❌ CRÍTICO: No encuentro 'germany.xlsx'.")
+        st.code(f"Buscando en: {ruta_germany}")
+        # Chivato: Mostrar qué hay en la carpeta 'data' para ver si se subió mal
+        data_dir = os.path.join(PROJECT_ROOT, "data")
+        if os.path.exists(data_dir):
+            st.warning(f"Contenido de la carpeta data: {os.listdir(data_dir)}")
+        else:
+            st.error("¡La carpeta 'data' no existe en el servidor!")
+        return None
+
+    if not os.path.exists(ruta_greece):
+        st.error(f"❌ CRÍTICO: No encuentro 'greece.xlsx' en {ruta_greece}")
+        return None
+
+    # ---------------------------------------------------------
+    # 3. FUNCIONES INTERNAS DE LECTURA
+    # ---------------------------------------------------------
     def limpiar_tasa(x):
         if pd.isna(x): return np.nan
         if isinstance(x, (int, float)): return float(x)
@@ -62,24 +82,31 @@ def load_data_robusto():
 
     def leer_y_procesar(archivo_ruta, keyword_col):
         try:
-            # USAMOS LA RUTA ABSOLUTA AQUÍ
-            df = pd.read_excel(archivo_ruta)
+            # Añadimos engine='openpyxl' para asegurar compatibilidad
+            df = pd.read_excel(archivo_ruta, engine='openpyxl')
             
-            # ... (resto de tu lógica de limpieza igual) ...
+            # Normalización de columnas
             cols_lower = [str(c).lower() for c in df.columns]
+            
+            # Buscar columna fecha
             col_fecha_candidates = [c for c, cl in zip(df.columns, cols_lower) if 'date' in cl or 'fecha' in cl]
             col_fecha = col_fecha_candidates[0] if col_fecha_candidates else df.columns[0]
             
+            # Buscar columna de datos (Germany/Greece)
             col_dato_candidates = [c for c, cl in zip(df.columns, cols_lower) if keyword_col.lower() in cl]
             
             if not col_dato_candidates:
-                # Heurística ajustada
-                idx_tentativo = 4 if "greece" in archivo_ruta.lower() else 1
-                col_dato = df.columns[idx_tentativo] if idx_tentativo < len(df.columns) else None
-                if not col_dato: return None
+                # Heurística de posición si falla el nombre
+                idx = 4 if "greece" in archivo_ruta.lower() else 1
+                if idx < len(df.columns):
+                    col_dato = df.columns[idx]
+                else:
+                    st.error(f"⚠️ No pude identificar la columna de datos en {os.path.basename(archivo_ruta)}")
+                    return None
             else:
                 col_dato = col_dato_candidates[0]
 
+            # Crear DataFrame limpio
             df_final = df[[col_fecha, col_dato]].copy()
             df_final.columns = ['Fecha', 'Tasa']
             df_final['Fecha'] = pd.to_datetime(df_final['Fecha'], errors='coerce', dayfirst=True)
@@ -88,16 +115,20 @@ def load_data_robusto():
             return df_final.dropna().set_index('Fecha').sort_index()
             
         except Exception as e:
-            st.error(f"Error cargando {archivo_ruta}: {e}")
+            st.error(f"Error procesando {os.path.basename(archivo_ruta)}: {str(e)}")
             return None
 
-    # LLAMAMOS A LA FUNCIÓN CON LAS RUTAS NUEVAS
+    # ---------------------------------------------------------
+    # 4. EJECUCIÓN
+    # ---------------------------------------------------------
     df_ger = leer_y_procesar(ruta_germany, "Germany")
-    df_gre = leer_y_procesar(ruta_greece, "Grecia")
-    
+    df_gre = leer_y_procesar(ruta_greece, "Grecia") # Ojo: asegúrate que en el excel pone "Grecia" o "Greece"
+
     if df_ger is None or df_gre is None or df_ger.empty or df_gre.empty:
+        st.error("Error: Uno de los DataFrames está vacío o no se cargó.")
         return None
         
+    # Cruce de datos (Join)
     df_comb = df_gre.join(df_ger, how='inner', lsuffix='_GRE', rsuffix='_GER')
     df_comb['Prima_Riesgo_Bps'] = (df_comb['Tasa_GRE'] - df_comb['Tasa_GER']) * 100
     
