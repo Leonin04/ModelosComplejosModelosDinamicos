@@ -12,6 +12,9 @@ Este proyecto ha sido desplegado en la nube. Puedes interactuar con la aplicaci�
 
 👉 **[VER APLICACIÓN WEB DEPLEGADA](AQUÍ_PEGA_TU_ENLACE_DE_STREAMLIT_CLOUD)** 👈
 
+
+> ⚠️ **Advertencia:** Si se opta por realizar pruebas siguiendo las siguientes guías se debe de tener un conocimiento básico sobre como gestionar entornos y demás.
+
 ---
 
 ## 📖 Descripción del Proyecto
@@ -92,6 +95,8 @@ Estos scripts configuran el entorno y lanzan la aplicación automáticamente.
        bash Seminario/installers/setup_unix.sh
        ```
 
+    > Nota: Debes de tener conda o miniconda instalado.
+
 ### B. Ejecución Manual (Expertos)
 Si prefieres usar la terminal paso a paso:
 
@@ -108,6 +113,53 @@ Si prefieres usar la terminal paso a paso:
     ```bash
     streamlit run Seminario/Home.py
     ```
+
+### C. Ejecución Ultra-Rápida con `uv` (Experimental / Moderno)
+Para usuarios avanzados que deseen tiempos de instalación casi instantáneos, soportamos **uv**, un gestor de paquetes de nueva generación escrito en Rust.
+
+1.  **Instalar uv** (si no lo tienes):
+    ```bash
+    pip install uv
+    ```
+
+2.  **Configurar y Ejecutar (en segundos):**
+    ```bash
+    cd Seminario
+    
+    # 1. Crear entorno virtual
+    uv venv
+    
+    # 2. Activar entorno
+    # Windows:
+    .venv\Scripts\activate
+    # Linux/Mac:
+    source .venv/bin/activate
+    
+    # 3. Instalar dependencias a velocidad luz
+    uv pip install -r requirements.txt
+    
+    # 4. Lanzar
+    streamlit run Home.py
+    ```
+
+---
+> Alternativamente, puedes ejecutar el proyecto utilizando directamente Python. Asegúrate de tener instaladas todas las dependencias necesarias (por ejemplo, `streamlit`, `pymc`, `plotly`, etc.). Luego, puedes lanzar la aplicación con:
+>
+> ```bash
+> python3 Seminario/Home.py
+> ```
+>
+> También puedes ejecutar scripts individuales, como el motor de cálculo, con:
+>
+> ```bash
+> python3 Seminario/script.py
+> ```
+>
+> Si prefieres usar el módulo de Python, ejecuta:
+>
+> ```bash
+> python -m streamlit run Seminario/Home.py
+> ```
 
 ---
 
