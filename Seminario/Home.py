@@ -73,6 +73,11 @@ col_left, col_right = st.columns([1, 1], gap="large")
 
 with col_left:
     st.markdown("## Presentación del Proyecto")
+
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    video_path = os.path.join(BASE_DIR, "web_files", "Crisis_de_la_Deuda_Griega.mp4")
+
     video_path = "web_files/Crisis_de_la_Deuda_Griega.mp4"
     if os.path.exists(video_path):
         st.video(video_path)
