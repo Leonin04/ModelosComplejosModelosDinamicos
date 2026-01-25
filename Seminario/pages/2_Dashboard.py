@@ -36,11 +36,23 @@ perspectivas de la **Econofísica (Difusión)** y la **Econometría (GARCH)**.
 # ==========================================
 # FUNCIONES DE CARGA Y CÁLCULO
 # ==========================================
+
 @st.cache_data
 def load_data_robusto():
     """
-    Carga y limpia los datos de Grecia y Alemania con múltiples comprobaciones.
+    Carga datos usando rutas absolutas para que funcione en la Nube y en Local.
     """
+    # 1. Averiguar dónde está este script (Dashboard.py)
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    
+    # 2. Subir un nivel para llegar a la carpeta 'Seminario' (padre de 'pages')
+    PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+    
+    # 3. Construir las rutas completas a los Excel
+    ruta_germany = os.path.join(PROJECT_ROOT, "data", "germany.xlsx")
+    ruta_greece = os.path.join(PROJECT_ROOT, "data", "greece.xlsx")
+
+    # --- Función interna de limpieza (se mantiene igual) ---
     def limpiar_tasa(x):
         if pd.isna(x): return np.nan
         if isinstance(x, (int, float)): return float(x)
@@ -48,21 +60,21 @@ def load_data_robusto():
         try: return float(s)
         except ValueError: return np.nan
 
-    def leer_y_procesar(archivo, keyword_col):
+    def leer_y_procesar(archivo_ruta, keyword_col):
         try:
-            df = pd.read_excel(archivo)
+            # USAMOS LA RUTA ABSOLUTA AQUÍ
+            df = pd.read_excel(archivo_ruta)
             
-            # Buscar columna Fecha
+            # ... (resto de tu lógica de limpieza igual) ...
             cols_lower = [str(c).lower() for c in df.columns]
             col_fecha_candidates = [c for c, cl in zip(df.columns, cols_lower) if 'date' in cl or 'fecha' in cl]
             col_fecha = col_fecha_candidates[0] if col_fecha_candidates else df.columns[0]
-                
-            # Buscar columna Datos
+            
             col_dato_candidates = [c for c, cl in zip(df.columns, cols_lower) if keyword_col.lower() in cl]
             
             if not col_dato_candidates:
-                # Heurística de posición si falla el nombre
-                idx_tentativo = 4 if "greece" in archivo.lower() or "grecia" in archivo.lower() else 1
+                # Heurística ajustada
+                idx_tentativo = 4 if "greece" in archivo_ruta.lower() else 1
                 col_dato = df.columns[idx_tentativo] if idx_tentativo < len(df.columns) else None
                 if not col_dato: return None
             else:
@@ -76,38 +88,20 @@ def load_data_robusto():
             return df_final.dropna().set_index('Fecha').sort_index()
             
         except Exception as e:
-            st.error(f"Error cargando {archivo}: {e}")
+            st.error(f"Error cargando {archivo_ruta}: {e}")
             return None
 
-    df_ger = leer_y_procesar("data/germany.xlsx", "Germany")
-    df_gre = leer_y_procesar("data/greece.xlsx", "Grecia")
+    # LLAMAMOS A LA FUNCIÓN CON LAS RUTAS NUEVAS
+    df_ger = leer_y_procesar(ruta_germany, "Germany")
+    df_gre = leer_y_procesar(ruta_greece, "Grecia")
     
     if df_ger is None or df_gre is None or df_ger.empty or df_gre.empty:
         return None
         
     df_comb = df_gre.join(df_ger, how='inner', lsuffix='_GRE', rsuffix='_GER')
-    # Prima en Puntos Básicos (bps)
     df_comb['Prima_Riesgo_Bps'] = (df_comb['Tasa_GRE'] - df_comb['Tasa_GER']) * 100
     
     return df_comb
-
-# @st.cache_data
-# def calculate_ewma_volatility(series, lambda_=0.94):
-#     """
-#     Calcula la volatilidad EWMA (RiskMetrics), un proxy muy bueno del GARCH
-#     que se puede calcular en tiempo real.
-#     """
-#     returns = series.diff().dropna()
-#     n = len(returns)
-#     variance = np.zeros(n)
-#     variance[0] = returns.var()
-    
-#     # Bucle optimizado con numba sería mejor, pero esto es suficientemente rápido para n<5000
-#     for t in range(1, n):
-#         variance[t] = lambda_ * variance[t-1] + (1 - lambda_) * returns[t]**2
-        
-#     volatility = np.sqrt(variance)
-#     return pd.Series(volatility, index=returns.index)
 
 def calculate_ewma_volatility(series, lambda_=0.94):
     """
@@ -210,8 +204,14 @@ with tab3:
     Aquí analizamos cómo cambia el riesgo (volatilidad) día a día.
     """)
     
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
+    
     # 1. Intentar cargar imagen estática (Modelo Bayesiano Completo)
-    image_path = "analisis_grecia_calibracion_mse/Modelo_GARCH_Fit.png"
+    # image_path = "analisis_grecia_calibracion_mse/Modelo_GARCH_Fit.png"
+    
+    carpeta_imagenes = "analisis_grecia_calibracion_mse"
+    image_path = os.path.join(PROJECT_ROOT, carpeta_imagenes, "Modelo_GARCH_Fit.png")
     
     if os.path.exists(image_path):
         st.success("✅ Resultados del Modelo Bayesiano (MCMC) encontrados.")
