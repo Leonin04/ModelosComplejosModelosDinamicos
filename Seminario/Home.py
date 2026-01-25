@@ -4,7 +4,13 @@ import zipfile
 import io
 
 # ==========================================
-# CONFIGURACIÓN DE PÁGINA
+# 1. CONFIGURACIÓN DE RUTAS ABSOLUTAS
+# ==========================================
+# Definimos la ruta base donde está este archivo (Home.py)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# ==========================================
+# 2. CONFIGURACIÓN DE PÁGINA
 # ==========================================
 st.set_page_config(
     page_title="Seminario de Modelización | Grupo 4",
@@ -12,7 +18,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# Estilos CSS para dar apariencia de documento académico (tipo LaTeX)
+# Estilos CSS para dar apariencia de documento académico
 st.markdown("""
 <style>
     h1 {font-family: 'Helvetica', sans-serif; color: #2c3e50; font-weight: 700;}
@@ -34,56 +40,64 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# FUNCIONES UTILITARIAS
+# 3. FUNCIONES UTILITARIAS
 # ==========================================
 def create_zip_of_project():
-    """Empaqueta el código fuente y datos para descarga."""
+    """
+    Crea un archivo ZIP en memoria con todo el contenido de la carpeta del proyecto,
+    excluyendo archivos basura o pesados (venv, git, etc).
+    """
     buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-        allowed_extensions = {'.py', '.xlsx', '.pdf', '.mp4'}
-        exclude_dirs = {'__pycache__', '.git', '.ipynb_checkpoints'}
-        
-        # Archivos raíz
-        for file in os.listdir('.'):
-            if os.path.isfile(file) and os.path.splitext(file)[1].lower() in allowed_extensions:
-                zip_file.write(file, arcname=file)
-        
-        # Archivos en pages
-        if os.path.exists('pages'):
-            for file in os.listdir('pages'):
-                if os.path.isfile(os.path.join('pages', file)) and os.path.splitext(file)[1].lower() in allowed_extensions:
-                    zip_file.write(os.path.join('pages', file), arcname=os.path.join('pages', file))
+    
+    # Carpetas y archivos a ignorar para que el ZIP no pese demasiado
+    EXCLUDE_DIRS = {'.git', '__pycache__', 'venv', '.venv', '.streamlit', 'environment_files', 'installers'}
+    EXCLUDE_FILES = {'.DS_Store', '.gitignore'}
+
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        for root, dirs, files in os.walk(BASE_DIR):
+            # Filtrar carpetas no deseadas
+            dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
+            
+            for file in files:
+                if file in EXCLUDE_FILES or file.endswith('.pyc'):
+                    continue
+                
+                # Ruta absoluta del archivo
+                file_path = os.path.join(root, file)
+                # Ruta relativa dentro del ZIP
+                arcname = os.path.relpath(file_path, BASE_DIR)
+                
+                try:
+                    zip_file.write(file_path, arcname)
+                except Exception as e:
+                    print(f"No se pudo incluir {file}: {e}")
                     
     buffer.seek(0)
     return buffer
 
 # ==========================================
-# CONTENIDO PRINCIPAL
+# 4. CONTENIDO PRINCIPAL
 # ==========================================
 
-# 1. Cabecera Institucional (Sin columnas, todo a la izquierda)
 st.title("Análisis de la Prima de Riesgo Griega")
 st.markdown("### *Un Enfoque Comparativo entre Econofísica y Econometría Bayesiana*")
 st.markdown("**Seminario de Modelización 2025/26 - Grupo 4**")
 
 st.divider()
 
-# 2. Video Introductorio y Resumen
+# --- Video Introductorio y Resumen ---
 col_left, col_right = st.columns([1, 1], gap="large")
 
 with col_left:
     st.markdown("## Presentación del Proyecto")
 
-    HOME_DIR = os.path.dirname(os.path.abspath(__file__))
-
-    # 2. Construir la ruta al video sumando carpetas
-    # Buscamos en: Seminario/web_files/Crisis_de_la_Deuda_Griega.mp4
-    video_path = os.path.join(HOME_DIR, "web_files", "Crisis_de_la_Deuda_Griega.mp4")
+    # Ruta absoluta al video (carpeta web_files)
+    video_path = os.path.join(BASE_DIR, "web_files", "Crisis_de_la_Deuda_Griega.mp4")
     
     if os.path.exists(video_path):
         st.video(video_path)
     else:
-        st.info("El video introductorio no se encuentra disponible en el servidor. Ruta esperada: " + video_path)
+        st.info(f"⚠️ Video no encontrado en: {video_path}")
         
     st.markdown("### Resumen Ejecutivo")
     st.markdown("""
@@ -92,7 +106,6 @@ with col_left:
     
     * **Econofísica (Difusión Anómala):** Evalúa la memoria del mercado a largo plazo mediante leyes de potencia.
     * **Econometría (GARCH Bayesiano):** Modela la volatilidad condicional y el agrupamiento de volatilidad a corto plazo.
-    * Se incluye un **video introductorio** que contextualiza la crisis y los objetivos del estudio, para aquellos que no sepan del tema.
     """)
 
 with col_right:
@@ -118,13 +131,12 @@ with col_right:
     st.markdown("### Acceso a la Simulación")
     st.write("Ejecute los modelos, modifique los parámetros de Hurst y visualice la volatilidad en tiempo real.")
     
-    # === EL ENLACE AL DASHBOARD ===
-    # Esto busca el archivo en la carpeta 'pages' automáticamente
+    # Enlace interno al Dashboard
     st.page_link("pages/2_Dashboard.py", label="ACCEDER AL DASHBOARD INTERACTIVO", icon="📈", use_container_width=True)
 
 st.divider()
 
-# 3. Zona de Descargas y Autores
+# --- Zona de Descargas y Autores ---
 st.subheader("Recursos Adicionales y Autoría")
 
 c_down, c_auth = st.columns([1, 1])
@@ -132,32 +144,45 @@ c_down, c_auth = st.columns([1, 1])
 with c_down:
     st.markdown("**Descarga de Materiales**")
     
-    # PDF
-    pdf_path = "paper_final.pdf"
-    if os.path.exists(pdf_path):
-        with open(pdf_path, "rb") as pdf_file:
+    # Lógica inteligente para encontrar el PDF (primero en static, luego en raíz)
+    pdf_path_static = os.path.join(BASE_DIR, "static", "paper_final.pdf")
+    pdf_path_root = os.path.join(BASE_DIR, "paper_final.pdf")
+    
+    final_pdf_path = None
+    if os.path.exists(pdf_path_static):
+        final_pdf_path = pdf_path_static
+    elif os.path.exists(pdf_path_root):
+        final_pdf_path = pdf_path_root
+    
+    # Botón de PDF
+    if final_pdf_path:
+        with open(final_pdf_path, "rb") as pdf_file:
             st.download_button(
-                label="Descargar Paper Completo (PDF)",
+                label="📄 Descargar Paper Completo (PDF)",
                 data=pdf_file,
                 file_name="Seminario_Grupo4_Econofisica.pdf",
                 mime="application/pdf",
                 use_container_width=True
             )
+    else:
+        st.warning("⚠️ El PDF del paper no se encontró en el servidor.")
     
-    # Código ZIP
-    st.download_button(
-        label="Descargar Repositorio de Código (ZIP)",
-        data=create_zip_of_project(),
-        file_name="Proyecto_Econofisica.zip",
-        mime="application/zip",
-        use_container_width=True
-    )
+    # Botón de ZIP (Generado al vuelo)
+    try:
+        st.download_button(
+            label="📦 Descargar Repositorio de Código (ZIP)",
+            data=create_zip_of_project(),
+            file_name="Proyecto_Econofisica_Grupo4.zip",
+            mime="application/zip",
+            use_container_width=True
+        )
+    except Exception as e:
+        st.error(f"Error generando el ZIP: {e}")
 
 with c_auth:
     st.markdown("**Autores**")
-    # Sustituye con los nombres reales
     st.markdown("""
-    * Ismael Sallami Moreno
-    * David Bacas Posadas
+    * **Ismael Sallami Moreno**
+    * **David Bacas Posadas**
     """)
     st.caption("Universidad de Granada - Facultad de Ciencias Económicas y Empresariales")
