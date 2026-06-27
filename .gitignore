@@ -17,3 +17,6 @@ __pycache__/
 **/venv/
 **/.venv/
 **/__pycache__/
+
+# Documentos de análisis internos (no versionados)
+reports/

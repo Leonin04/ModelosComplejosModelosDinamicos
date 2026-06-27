@@ -1,4 +1,4 @@
-# 🏛️ Seminario de Modelización: Modelos Complejos vs Modelos Dinámicos
+# Seminario de Modelización: Modelos Complejos vs Modelos Dinámicos
 ## Análisis de la Prima de Riesgo en la Crisis de Deuda Soberana (2008-2013)
 
 **Asignatura:** Seminario de Modelización (2025-26)
@@ -7,17 +7,17 @@
 
 ---
 
-## 🚀 Acceso Inmediato (Cloud)
+## Acceso Inmediato (Cloud)
 Este proyecto ha sido desplegado en la nube. Puedes interactuar con la aplicación y visualizar los resultados sin necesidad de instalación local:
 
-👉 **[VER APLICACIÓN WEB DEPLEGADA](https://emsemgrupo4.streamlit.app/)** 👈
+**[Ver aplicación web desplegada](https://emsemgrupo4.streamlit.app/)**
 
 
-> ⚠️ **Advertencia:** Si se opta por realizar pruebas siguiendo las siguientes guías se debe de tener un conocimiento básico sobre como gestionar entornos y demás.
+> **Advertencia:** Si se opta por realizar pruebas siguiendo las siguientes guías se debe de tener un conocimiento básico sobre como gestionar entornos y demás.
 
 ---
 
-## 📖 Descripción del Proyecto
+## Descripción del Proyecto
 
 Este trabajo presenta un estudio comparativo computacional entre dos enfoques metodológicos dispares para explicar la dinámica del diferencial del bono griego a 10 años respecto al Bund alemán (Prima de Riesgo) durante los años más críticos de la crisis financiera.
 
@@ -26,17 +26,17 @@ Este trabajo presenta un estudio comparativo computacional entre dos enfoques me
 
 ---
 
-## 🏗️ Estructura Detallada del Repositorio
+## Estructura Detallada del Repositorio
 
 El repositorio se divide en dos grandes bloques: `/Recursos` (entorno de desarrollo e investigación) y `/Seminario` (producto final). A continuación, se detalla la arquitectura de la carpeta de producción **`/Seminario`**:
 
-### 📂 `/Seminario` (Entorno de Producción)
+### `/Seminario` (Entorno de Producción)
 Esta carpeta contiene la aplicación final, limpia y estructurada modularmente.
 
 #### 1. Raíz de la Aplicación
-* **`Home.py`**: 🏠 **Punto de Entrada.** Es el script principal que ejecuta Streamlit. Orquesta la navegación entre páginas y presenta la introducción institucional.
-* **`script.py`**: ⚙️ **Motor de Cálculo.** Este script independiente contiene la lógica pesada del proyecto. Realiza la calibración del modelo GARCH utilizando `PyMC`, ejecuta las cadenas de Markov (MCMC) y genera las imágenes estáticas de los resultados.
-* **`paper_final.pdf`**: 📄 **Memoria Académica.** El documento PDF final con todo el desarrollo teórico, matemático y las conclusiones del seminario.
+* **`Home.py`**: **Punto de Entrada.** Es el script principal que ejecuta Streamlit. Orquesta la navegación entre páginas y presenta la introducción institucional.
+* **`script.py`**: **Motor de Cálculo.** Este script independiente contiene la lógica pesada del proyecto. Realiza la calibración del modelo GARCH utilizando `PyMC`, ejecuta las cadenas de Markov (MCMC) y genera las imágenes estáticas de los resultados.
+* **`paper_final.pdf`**: **Memoria Académica.** El documento PDF final con todo el desarrollo teórico, matemático y las conclusiones del seminario.
 
 #### 2. Módulos y Código (`/pages`)
 La lógica de visualización se ha desacoplado en páginas independientes para facilitar el mantenimiento:
@@ -52,7 +52,7 @@ Contiene la materia prima del análisis:
     * *Nota:* Los datos son procesados y limpiados en tiempo real por el `Dashboard.py` para calcular el *Spread*.
 
 #### 4. Cuadernos de Investigación (`/Notebooks`)
-* **`Modelo.ipynb`**: 📓 **Jupyter Notebook.** Contiene el desarrollo "paso a paso" y pedagógico del proyecto. Ideal para entender la lógica secuencial del análisis de datos, las pruebas de difusión y la construcción del modelo Bayesiano antes de ser pasados a la web.
+* **`Modelo.ipynb`**: **Jupyter Notebook.** Contiene el desarrollo "paso a paso" y pedagógico del proyecto. Ideal para entender la lógica secuencial del análisis de datos, las pruebas de difusión y la construcción del modelo Bayesiano antes de ser pasados a la web.
 
 #### 5. Resultados Pre-Calculados (`/analisis_grecia_calibracion_mse`)
 Almacena los artefactos generados por `script.py`. Dado que el modelo Bayesiano tarda mucho en computar, las gráficas se guardan aquí como imágenes estáticas para que la web cargue rápido:
@@ -77,7 +77,7 @@ Contiene todos los archivos `.tex`, `.bib` y recursos vectoriales necesarios par
 
 ---
 
-## 💻 Guía de Instalación y Ejecución Local
+## Guía de Instalación y Ejecución Local
 
 Si deseas ejecutar el proyecto en tu propio ordenador, sigue estos pasos. Es necesario situarse dentro de la estructura del proyecto.
 
@@ -143,27 +143,22 @@ Para usuarios avanzados que deseen tiempos de instalación casi instantáneos, s
     ```
 
 ---
-> Alternativamente, puedes ejecutar el proyecto utilizando directamente Python. Asegúrate de tener instaladas todas las dependencias necesarias (por ejemplo, `streamlit`, `pymc`, `plotly`, etc.). Luego, puedes lanzar la aplicación con:
->
-> ```bash
-> python3 Seminario/Home.py
-> ```
->
-> También puedes ejecutar scripts individuales, como el motor de cálculo, con:
->
-> ```bash
-> python3 Seminario/script.py
-> ```
->
-> Si prefieres usar el módulo de Python, ejecuta:
+> Alternativamente, si ya dispones de las dependencias instaladas (por ejemplo, `streamlit`, `pymc`, `plotly`, etc.), puedes lanzar la aplicación invocando Streamlit como módulo de Python. Nótese que una aplicación Streamlit no se ejecuta con `python Home.py`, sino a través de Streamlit:
 >
 > ```bash
 > python -m streamlit run Seminario/Home.py
 > ```
+>
+> El motor de cálculo (`script.py`) sí es un script independiente y puede ejecutarse directamente con Python. Debe lanzarse desde dentro de la carpeta `Seminario`, ya que utiliza rutas relativas hacia `data/`:
+>
+> ```bash
+> cd Seminario
+> python3 script.py
+> ```
 
 ---
 
-## 📊 Resumen de Resultados Técnicos
+## Resumen de Resultados Técnicos
 
 | Modelo              | Parámetro Clave        | MSE (Error) | Interpretación del Hallazgo                                                                      |
 |---------------------|------------------------|-------------|--------------------------------------------------------------------------------------------------|
